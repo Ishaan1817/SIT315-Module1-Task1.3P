@@ -1,0 +1,68 @@
+cpp
+const int pirPin = 2;    
+const int ledPin = 13;  
+const int buttonPin = 7;
+
+#define TEMP_SENSOR_PIN A2  // Pin assigned for the temperature sensor's output
+#define LED_PIN 13          // Pin designated for the LED
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(pirPin, INPUT);
+  pinMode(ledPin, OUTPUT);
+  pinMode(buttonPin, INPUT_PULLUP);
+}
+
+void loop() {
+  int motionSensorValue = digitalRead(pirPin);
+  int buttonState = digitalRead(buttonPin);
+
+  delay(2000);  // Delay introduced to regulate the frequency of readings
+
+  int sensorValue = analogRead(TEMP_SENSOR_PIN);
+
+  float voltage = sensorValue * (5.0 / 1023.0);
+  float temperature = (voltage - 0.5) * 100.0;
+
+  // Display temperature only if the button remains unpressed
+  if (buttonState != LOW) {
+    Serial.print("Temperature: ");
+    Serial.println(temperature);
+  }
+
+  if (buttonState == LOW) {
+    blinkLED();
+  } else {
+    // Indicate motion detection: LED activated
+    if (motionSensorValue == HIGH) {
+      digitalWrite(ledPin, HIGH);
+      Serial.println("Motion detected: LED activated");
+    } else {
+      // Motion not detected: LED deactivated
+      digitalWrite(ledPin, LOW);
+      Serial.println("Motion not detected: LED deactivated");
+    }
+
+    // Check the temperature sensor's reading
+    if (buttonState != LOW) {
+      if (temperature > 25.0) {
+        Serial.println("Temperature exceeds 25 degrees Celsius");
+        digitalWrite(LED_PIN, HIGH);  // Activate the LED
+      } else {
+        Serial.println("Temperature is 25 degrees Celsius or lower");
+        digitalWrite(LED_PIN, LOW);   // Deactivate the LED
+      }
+    }
+  }
+
+  delay(1000); 
+}
+
+void blinkLED() {
+  for (int i = 0; i < 2; i++) {
+    digitalWrite(ledPin, HIGH);
+    delay(500);
+    digitalWrite(ledPin, LOW);
+    delay(500);
+  }
+}
